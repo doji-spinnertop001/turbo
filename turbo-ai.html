@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turbo ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080808; --fg:#f4f4f4; --mut:#8b8b8b; --dim:#5d5d5d; --line:#1f1f1f; --chip:#171717;
+  --pix:"Silkscreen","Courier New",monospace; --mono:"Space Mono",ui-monospace,Menlo,monospace; --sans:"Space Grotesk",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>")}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+header{height:64px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line);position:relative;z-index:3;background:rgba(8,8,8,.85)}
+.brand{font-family:var(--pix);font-size:22px;font-weight:700;letter-spacing:.5px;cursor:pointer;background:none;border:0}
+nav{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+nav button{background:none;border:0;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--mut);letter-spacing:.5px}
+nav button:hover{color:var(--fg)}
+nav button.on{background:#1b1b1b;color:var(--fg)}
+.right{display:flex;gap:10px}
+.box{background:#101010;border:1px solid var(--line);border-radius:8px;height:38px;min-width:42px;padding:0 14px;font-family:var(--mono);font-size:13px;color:var(--mut)}
+.box:hover{color:var(--fg);border-color:#333}
+
+main{flex:1;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;overflow-y:auto;display:none}
+.view.on{display:block}
+
+.hero{max-width:1080px;margin:0 auto;min-height:100%;display:grid;grid-template-columns:1.25fr .75fr;align-items:center;padding:60px 28px;position:relative}
+.halftone{position:absolute;width:340px;height:120px;border-radius:999px;pointer-events:none;
+ background-image:radial-gradient(circle,#fff 1.5px,transparent 2.1px);background-size:6px 6px;
+ -webkit-mask-image:linear-gradient(100deg,#000 0%,rgba(0,0,0,.15) 100%);mask-image:linear-gradient(100deg,#000 0%,rgba(0,0,0,.15) 100%)}
+.h1{top:10px;left:-30px;transform:rotate(24deg)}
+.h2{bottom:40px;right:-70px;transform:rotate(-24deg);-webkit-mask-image:linear-gradient(280deg,#000 0%,rgba(0,0,0,.15) 100%);mask-image:linear-gradient(280deg,#000 0%,rgba(0,0,0,.15) 100%)}
+.copy{position:relative;z-index:1}
+h1{font-size:72px;font-weight:700;letter-spacing:-2px;line-height:1}
+h1 span{font-family:var(--pix);font-size:40px;letter-spacing:0;margin-left:10px}
+.tag{font-size:26px;font-weight:700;margin-top:22px}
+.tag small{font-size:16px;font-weight:500}
+.welcome{font-family:var(--mono);font-size:13px;color:var(--mut);margin:28px 0 22px;line-height:1.7}
+.checks{list-style:none;padding:0;display:grid;gap:12px}
+.checks li{font-size:17px;font-weight:500}
+.checks b{font-family:var(--mono);font-weight:400;color:var(--mut);margin-right:12px}
+.checks i{font-size:12px;color:var(--dim);margin-left:8px}
+.cta{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
+.btn{font-family:var(--mono);font-size:13px;padding:14px 16px;border-radius:7px;border:1px solid #2a2a2a;background:transparent}
+.btn:hover{border-color:#555}
+.btn.solid{background:var(--fg);color:#000;border-color:var(--fg)}
+.btn.solid:hover{background:#fff}
+.mark{justify-self:center;text-align:center;position:relative;z-index:1}
+.mark p{font-family:var(--mono);letter-spacing:6px;font-size:12px}
+.mark div{font-family:var(--pix);font-size:64px;font-weight:700;line-height:1.1;margin:4px 0}
+
+.thread{max-width:760px;margin:0 auto;padding:36px 24px 28px;display:flex;flex-direction:column;gap:26px}
+.msg .who{font-family:var(--pix);font-size:12px;color:var(--mut);margin-bottom:8px}
+.msg.user{align-self:flex-end;max-width:85%}
+.msg.user .body{border:1px solid #2a2a2a;background:#0f0f0f;border-radius:10px;padding:12px 15px;font-family:var(--mono);font-size:14px}
+.msg.user .who{text-align:right}
+.msg.ai .body{font-size:16.5px;line-height:1.65}
+.msg.err .body{color:#ff9d8f;font-family:var(--mono);font-size:13px}
+.msg .retry{margin-top:10px;background:none;border:1px solid #333;border-radius:6px;padding:7px 12px;font-family:var(--mono);font-size:12px;color:var(--fg)}
+.msg .retry:hover{border-color:#777}
+.body{overflow-wrap:anywhere;white-space:pre-wrap}
+.body pre{background:#101010;border:1px solid var(--line);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:13px;margin:10px 0;white-space:pre}
+.body code{font-family:var(--mono);font-size:.9em;background:#171717;padding:2px 5px;border-radius:4px}
+.body pre code{background:none;padding:0}
+.empty{margin:14vh auto 0;text-align:center;max-width:520px;padding:0 20px}
+.empty h2{font-size:34px;letter-spacing:-1px}
+.empty p{font-family:var(--mono);font-size:13px;color:var(--mut);margin:12px 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.chip:hover{color:var(--fg);border-color:#444}
+.caret{display:inline-block;width:8px;height:1em;background:var(--fg);vertical-align:-2px;animation:b 1s steps(2) infinite}
+@keyframes b{50%{opacity:0}}
+
+.hist{max-width:760px;margin:0 auto;padding:36px 24px}
+.hist h2{font-size:30px;letter-spacing:-1px;margin-bottom:18px}
+.hist input{width:100%;background:#0e0e0e;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:13px;margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line)}
+.row button.open{flex:1;text-align:left;background:none;border:0;min-width:0}
+.row .t{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .d{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:4px}
+.row .x{background:none;border:1px solid var(--line);border-radius:6px;width:32px;height:32px;color:var(--mut);font-family:var(--mono)}
+.row .x:hover{color:var(--fg);border-color:#555}
+.none{font-family:var(--mono);font-size:13px;color:var(--mut);padding:20px 0}
+
+footer{flex:none;height:97px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr minmax(0,720px) 1fr;align-items:center;padding:0 28px;background:rgba(8,8,8,.9);position:relative;z-index:3}
+.status{font-family:var(--mono);font-size:13px;color:var(--fg)}
+.composer{display:flex;align-items:center;gap:10px}
+.round{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid #2a2a2a;background:transparent;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.round:hover{color:var(--fg);border-color:#555}
+.round.go{width:46px;height:46px;background:var(--fg);color:#000;border-color:var(--fg);font-weight:700}
+.round.go:disabled{opacity:.4;cursor:wait}
+textarea{flex:1;resize:none;height:46px;max-height:46px;background:#0e0e0e;border:1px solid var(--line);border-radius:999px;padding:12px 20px;font-family:var(--mono);font-size:13px;line-height:20px;overflow:hidden}
+textarea::placeholder{color:var(--dim)}
+.model{justify-self:end;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;color:var(--mut)}
+.model b{color:var(--fg);font-weight:400}
+select{background:#0e0e0e;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;max-width:150px}
+option{background:#111}
+
+.toast{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);background:var(--fg);color:#000;font-family:var(--mono);font-size:12px;padding:10px 14px;border-radius:8px;z-index:9;display:none}
+
+@media (max-width:860px){
+  header{padding:0 14px}
+  nav{position:static;transform:none;overflow-x:auto}
+  .brand{display:none}
+  .hero{grid-template-columns:1fr;padding:36px 20px}
+  .mark{display:none}
+  h1{font-size:52px}h1 span{font-size:28px}
+  footer{grid-template-columns:1fr;padding:0 14px}
+  .status,.model{display:none}
+}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <button class="brand" data-go="home">Turbo ai</button>
+  <nav>
+    <button data-go="home" class="on">Home</button>
+    <button data-go="chat">Chat</button>
+    <button data-go="history">History</button>
+  </nav>
+  <div class="right">
+    <button class="box" id="searchBtn" title="Search chats" aria-label="Search chats">&#9906;</button>
+    <button class="box" id="userBtn" title="Change username"></button>
+  </div>
+</header>
+
+<main>
+  <section class="view on" id="v-home">
+    <div class="hero">
+      <div class="halftone h1"></div><div class="halftone h2"></div>
+      <div class="copy">
+        <h1>Turbo <span>ai</span></h1>
+        <p class="tag">Chat about anything. <small>Fast, casual, and your chats stay with you.</small></p>
+        <p class="welcome">Welcome, <span id="wUser"></span>. Your chats are saved in a SQLite database on this device.</p>
+        <ul class="checks">
+          <li><b>[x]</b>No API key, no sign-up <i>(just start typing)</i></li>
+          <li><b>[x]</b>Casual replies, any topic <i>(ask, joke, brainstorm)</i></li>
+          <li><b>[x]</b>History you can search <i>(stored locally in SQLite)</i></li>
+        </ul>
+        <div class="cta">
+          <button class="btn solid" data-go="chat">Start chatting</button>
+          <button class="btn" data-go="history">Open history</button>
+        </div>
+      </div>
+      <div class="mark"><p>T U R B O</p><div>AI</div><p>&gt;CHATS</p></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-chat"><div class="thread" id="thread"></div></section>
+
+  <section class="view" id="v-history">
+    <div class="hist">
+      <h2>History</h2>
+      <input id="hq" placeholder="Search your chats" autocomplete="off">
+      <div id="hlist"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="status" id="status">Turbo is idle</div>
+  <div class="composer">
+    <button class="round" id="newBtn" title="New chat" aria-label="New chat">+</button>
+    <textarea id="input" rows="1" placeholder="Message Turbo" aria-label="Message"></textarea>
+    <button class="round go" id="sendBtn" title="Send" aria-label="Send">&gt;</button>
+  </div>
+  <div class="model">model <b>deepseek</b></div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script src="https://js.puter.com/v2/"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const SYS = "You are Turbo, a friendly assistant for casual chat. Keep replies natural, warm and fairly short unless asked for detail. Use plain text, and fenced code blocks for code.";
+let db = null, chatId = null, busy = false, saveT, lastText = "";
+let mem = [];                       // in-memory copy of the open chat (used if SQLite is unavailable)
+
+/* ---------- SQLite (stored in localStorage as base64) ---------- */
+function q(sql, p = []) { const st = db.prepare(sql); st.bind(p); const r = []; while (st.step()) r.push(st.getAsObject()); st.free(); return r; }
+function run(sql, p = []) { if (!db) return; try { db.run(sql, p); } catch (e) { return; } clearTimeout(saveT); saveT = setTimeout(save, 300); }
+function save() {
+  try {
+    const u = db.export(); let s = ""; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192));
+    localStorage.setItem("turbo_db", btoa(s));
+  } catch (e) { toast("Could not save history (storage full?)"); }
+}
+async function initDb() {
+  const SQL = await initSqlJs({ locateFile: f => "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/" + f });
+  let data = null;
+  try { const b = localStorage.getItem("turbo_db"); if (b) data = Uint8Array.from(atob(b), c => c.charCodeAt(0)); } catch (e) {}
+  try { db = data ? new SQL.Database(data) : new SQL.Database(); } catch (e) { db = new SQL.Database(); }
+  db.run("CREATE TABLE IF NOT EXISTS chats(id INTEGER PRIMARY KEY, title TEXT, created INTEGER);" +
+         "CREATE TABLE IF NOT EXISTS messages(id INTEGER PRIMARY KEY, chat_id INTEGER, role TEXT, content TEXT, ts INTEGER);");
+}
+
+/* ---------- AI: DeepSeek, hosted, no API key ---------- */
+const within = (p, ms = 40000) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms))]);
+const flat = msgs => msgs.map(m => (m.role === "assistant" ? "Assistant: " : m.role === "user" ? "User: " : "") + m.content).join("\n");
+const PUTER_MODELS = ["deepseek/deepseek-v4-flash", "deepseek/deepseek-chat-v3.1", "deepseek/deepseek-v3.2"];
+let signing = null;
+
+const clean = t => String(t || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+const pickModel = ids => ids.find(i => /deepseek/i.test(i) && /v4|v3|chat|flash/i.test(i)) || ids.find(i => /deepseek/i.test(i));
+const FALLBACK = /gpt-oss|llama|qwen|mistral|gemma|minimax/i;
+const modelCache = {};
+// Keyless OpenAI-compatible hosts: ask each one which models it has right now, prefer DeepSeek
+function openaiHost(name, base, headers) {
+  return async (messages) => {
+    if (!modelCache[name]) {
+      const m = await within(fetch(base + "/models", { headers }), 15000);
+      if (!m.ok) throw new Error(name + " models " + m.status);
+      const j = await m.json();
+      const ids = (j.data || j.models || []).map(x => x.id || x.name).filter(Boolean);
+      modelCache[name] = { deep: pickModel(ids), other: ids.find(i => FALLBACK.test(i)) || ids[0] };
+    }
+    const { deep, other } = modelCache[name];
+    let last;
+    for (const model of [deep, other].filter(Boolean)) {
+      try {
+        const r = await within(fetch(base + "/chat/completions", {
+          method: "POST", headers: { "Content-Type": "application/json", ...headers },
+          body: JSON.stringify({ model, messages, stream: false })
+        }));
+        if (!r.ok) throw new Error(name + " " + r.status);
+        const j = await r.json(); const t = clean(j.choices?.[0]?.message?.content);
+        if (t) { const el = $(".model b"); if (el) el.textContent = model.split("/").pop(); return t; }
+      } catch (e) { last = e; }
+    }
+    throw last || new Error(name + " empty");
+  };
+}
+const PROVIDERS = [
+  openaiHost("llm7", "https://api.llm7.io/v1", { "Authorization": "Bearer unused" }),
+  openaiHost("ovh", "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1", {}),
+  // DeepSeek through Puter.js (free account, one-time sign-in popup, no API key)
+  async (messages) => {
+    if (!window.puter) throw new Error("puter not loaded");
+    if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+    let last;
+    for (const model of PUTER_MODELS) {
+      try {
+        const r = await within(puter.ai.chat(messages, { model }), 60000);
+        const t = (typeof r === "string" ? r : r?.message?.content?.[0]?.text || r?.message?.content || r?.text || "");
+        if (String(t).trim()) return String(t).trim();
+      } catch (e) { last = e; }
+    }
+    throw last || new Error("puter empty");
+  },
+  // DeepSeek through Pollinations (works only while it stays keyless)
+  async (messages) => {
+    const convo = flat(messages.filter(m => m.role !== "system")).slice(-1800) + "\nAssistant:";
+    const r = await within(fetch("https://gen.pollinations.ai/text/" + encodeURIComponent(convo) + "?model=deepseek&system=" + encodeURIComponent(SYS)));
+    if (!r.ok) throw new Error("pollinations " + r.status);
+    return (await r.text()).trim();
+  }
+];
+const NAMES = ["llm7", "ovh", "puter", "pollinations"];
+
+async function askAI(messages) {
+  const errs = [];
+  for (let i = 0; i < PROVIDERS.length; i++) {
+    try {
+      const out = await PROVIDERS[i](messages);
+      if (out && !/^\s*\{\s*"error"/i.test(out)) return out;
+      errs.push(NAMES[i] + ": empty reply");
+    } catch (e) { errs.push(NAMES[i] + ": " + (e && (e.message || e.error || e.code) || "failed")); }
+  }
+  console.warn("Turbo providers failed:", errs);
+  throw new Error("failed");
+}
+
+/* ---------- helpers ---------- */
+const esc = s => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+function md(t) {
+  return esc(t).replace(/```(\w*)\n?([\s\S]*?)(```|$)/g, (_, l, c) => "<pre><code>" + c.replace(/\n$/, "") + "</code></pre>")
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>");
+}
+function toast(m) { const t = $("#toast"); t.textContent = m; t.style.display = "block"; setTimeout(() => t.style.display = "none", 2600); }
+function setStatus(s) { $("#status").textContent = s; }
+const ago = ts => new Date(ts).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+
+/* ---------- views ---------- */
+function show(name) {
+  $$(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + name));
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.go === name));
+  if (name === "history") renderHistory();
+  if (name === "chat") scrollEnd();
+}
+function scrollEnd() { const v = $("#v-chat"); v.scrollTop = v.scrollHeight; }
+
+function bubble(role, text) {
+  const m = document.createElement("div"); m.className = "msg " + (role === "user" ? "user" : "ai");
+  m.innerHTML = '<div class="who">' + (role === "user" ? esc(user()) : "turbo&gt;") + '</div><div class="body"></div>';
+  m.querySelector(".body").innerHTML = md(text);
+  $("#thread").appendChild(m); scrollEnd(); return m;
+}
+function emptyState() {
+  $("#thread").innerHTML = '<div class="empty"><h2>What\'s up, ' + esc(user()) + '?</h2><p>Ask anything. Turbo keeps it casual.</p><div class="chips">' +
+    ["Tell me a random fun fact", "Help me pick a weekend plan", "Explain black holes like I'm 12", "Roast my to-do list (gently)"]
+      .map(t => '<button class="chip">' + t + '</button>').join("") + "</div></div>";
+  $$(".chip").forEach(c => c.onclick = () => { $("#input").value = c.textContent; send(); });
+}
+function loadChat(id) {
+  chatId = id; $("#thread").innerHTML = "";
+  const rows = db ? q("SELECT role, content FROM messages WHERE chat_id=? ORDER BY id", [id]) : [];
+  mem = rows.map(r => ({ role: r.role, content: r.content }));
+  rows.length ? rows.forEach(r => bubble(r.role, r.content)) : emptyState();
+  show("chat");
+}
+function newChat() { chatId = null; mem = []; emptyState(); show("chat"); $("#input").focus(); }
+
+function renderHistory() {
+  const box = $("#hlist");
+  if (!db) { box.innerHTML = '<p class="none">History is unavailable right now. Chatting still works.</p>'; return; }
+  const term = "%" + $("#hq").value.trim() + "%";
+  const rows = q("SELECT DISTINCT c.id, c.title, c.created FROM chats c LEFT JOIN messages m ON m.chat_id=c.id WHERE c.title LIKE ? OR m.content LIKE ? ORDER BY c.created DESC", [term, term]);
+  if (!rows.length) { box.innerHTML = '<p class="none">No chats found. Start one from the bar below.</p>'; return; }
+  box.innerHTML = rows.map(r => '<div class="row"><button class="open" data-id="' + r.id + '"><div class="t">' + esc(r.title) + '</div><div class="d">' + ago(r.created) + '</div></button><button class="x" data-del="' + r.id + '" aria-label="Delete chat">x</button></div>').join("");
+  $$(".open").forEach(b => b.onclick = () => loadChat(+b.dataset.id));
+  $$(".x").forEach(b => b.onclick = () => {
+    run("DELETE FROM messages WHERE chat_id=?", [+b.dataset.del]); run("DELETE FROM chats WHERE id=?", [+b.dataset.del]);
+    if (chatId === +b.dataset.del) { chatId = null; mem = []; } renderHistory();
+  });
+}
+
+/* ---------- sending ---------- */
+async function send(retryText) {
+  const text = (typeof retryText === "string" ? retryText : $("#input").value).trim();
+  if (!text || busy) return;
+  busy = true; $("#sendBtn").disabled = true;
+  const isRetry = typeof retryText === "string";
+  if (!isRetry) $("#input").value = "";
+  lastText = text;
+
+  if (!isRetry) {
+    if (!chatId) {
+      run("INSERT INTO chats(title, created) VALUES(?,?)", [text.slice(0, 48), Date.now()]);
+      chatId = db ? q("SELECT last_insert_rowid() id")[0].id : -1;
+      $("#thread").innerHTML = "";
+    }
+    show("chat");
+    run("INSERT INTO messages(chat_id, role, content, ts) VALUES(?,?,?,?)", [chatId, "user", text, Date.now()]);
+    mem.push({ role: "user", content: text });
+    bubble("user", text);
+  }
+  const node = bubble("ai", ""); const out = node.querySelector(".body"); out.innerHTML = '<span class="caret"></span>';
+  setStatus("Turbo is typing...");
+  const hist = mem.slice(-20);
+  try {
+    const full = await askAI([{ role: "system", content: SYS }, ...hist]);
+    out.innerHTML = md(full); scrollEnd();
+    mem.push({ role: "assistant", content: full });
+    run("INSERT INTO messages(chat_id, role, content, ts) VALUES(?,?,?,?)", [chatId, "assistant", full, Date.now()]);
+    setStatus("Turbo is idle");
+  } catch (e) {
+    node.classList.add("err");
+    out.textContent = "Turbo couldn't get a reply from DeepSeek. Tap Retry. If it keeps failing, open this file directly in Chrome or Firefox and turn off ad blockers for it.";
+    const b = document.createElement("button"); b.className = "retry"; b.textContent = "Retry";
+    b.onclick = () => { if (busy) return; node.remove(); send(lastText); };
+    node.appendChild(b);
+    setStatus("Request failed");
+  }
+  busy = false; $("#sendBtn").disabled = false; $("#input").focus();
+}
+
+/* ---------- user ---------- */
+function user() { try { return localStorage.getItem("turbo_user") || "friend"; } catch (e) { return "friend"; } }
+function askUser(force) {
+  let has = false; try { has = !!localStorage.getItem("turbo_user"); } catch (e) {}
+  if (!force && has) return;
+  let n = ""; try { n = (prompt("Pick a username (saved on this device)", user() === "friend" ? "" : user()) || "").trim(); } catch (e) {}
+  if (n) try { localStorage.setItem("turbo_user", n.slice(0, 20)); } catch (e) {}
+  paintUser(); if (!chatId && !mem.length) emptyState();
+}
+function paintUser() { $("#userBtn").textContent = user(); $("#wUser").textContent = user(); }
+
+/* ---------- wire up ---------- */
+$$("[data-go]").forEach(b => b.onclick = () => b.dataset.go === "chat" && !chatId && !$("#thread").children.length ? newChat() : show(b.dataset.go));
+$("#sendBtn").onclick = () => send();
+$("#newBtn").onclick = newChat;
+$("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+$("#userBtn").onclick = () => askUser(true);
+$("#searchBtn").onclick = () => { show("history"); $("#hq").focus(); };
+$("#hq").oninput = renderHistory;
+
+paintUser(); emptyState(); askUser(false);
+(typeof initSqlJs === "function" ? initDb() : Promise.reject()).catch(() => { db = null; setStatus("History unavailable"); toast("SQLite didn't load. Chat works, but chats won't be saved."); });
+</script>
+</body>
+</html>
