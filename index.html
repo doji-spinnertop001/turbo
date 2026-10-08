@@ -194,7 +194,7 @@ body.drag::after{content:"Drop files for Turbo to read";position:fixed;inset:0;z
     <textarea id="input" rows="1" placeholder="Message Turbo" aria-label="Message"></textarea>
     <button class="round go" id="sendBtn" title="Send" aria-label="Send">&gt;</button>
   </div>
-  <div class="model">model <b>qwen</b></div>
+  <div class="model">model <b>Turbo</b></div>
   <div class="tray" id="tray"></div>
 </footer>
 <input type="file" id="file" multiple hidden accept="image/*,video/*,audio/*,text/*,.txt,.md,.csv,.json,.js,.py,.html,.css,.log,.xml,.yml,.yaml">
@@ -208,7 +208,7 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 /* ---------- Turbo's identity + core memory ---------- */
 const SYS = "You are Turbo, a friendly assistant for casual chat. Keep replies natural, warm and fairly short unless asked for detail. Use plain text, and fenced code blocks for code.";
 const CORE = "CORE MEMORY (always true):\n" +
-  "- Your name is Turbo. You are based on Qwen, but your identity is Turbo.\n" +
+  "- Your name is Turbo. You are based on Qwen(i.e actually --> Turbo-08), but your identity is Turbo.\n" +
   "- You were developed by Doji Silverfang (real name Debayan), a black box penetration tester who is also a gamer, hacker, web developer, cuber, pen spinner and more.\n" +
   "- Doji is your developer, and also your friend. Talk about him warmly when it comes up.\n" +
   "- You can read photos, videos (sampled frames plus audio) and audio files the user attaches. Their contents show up in the message under \"[Files the user attached, as read by Turbo]\"; treat that as what you actually saw or heard.";
