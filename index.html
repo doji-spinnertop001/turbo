@@ -210,9 +210,12 @@ async function initDb() {
 const within = (p, ms = 40000) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms))]);
 const flat = msgs => msgs.map(m => (m.role === "assistant" ? "Assistant: " : m.role === "user" ? "User: " : "") + m.content).join("\n");
 const PUTER_MODELS = ["deepseek/deepseek-v4-flash", "deepseek/deepseek-chat-v3.1", "deepseek/deepseek-v3.2"];
-let signing = null;
 
 const clean = t => String(t || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+// Models that are not chat models (safety classifiers, embeddings, speech, etc.)
+const NON_CHAT = /guard|moderation|safety|embed|rerank|whisper|tts|stt|image|vision-only|classif/i;
+// Replies that look like a classifier verdict instead of a chat answer
+const BAD_REPLY = /^\s*(safety|categories)\s*:/i;
 const pickModel = ids => ids.find(i => /deepseek/i.test(i) && /v4|v3|chat|flash/i.test(i)) || ids.find(i => /deepseek/i.test(i));
 const FALLBACK = /gpt-oss|llama|qwen|mistral|gemma|minimax/i;
 const modelCache = {};
@@ -223,7 +226,7 @@ function openaiHost(name, base, headers) {
       const m = await within(fetch(base + "/models", { headers }), 15000);
       if (!m.ok) throw new Error(name + " models " + m.status);
       const j = await m.json();
-      const ids = (j.data || j.models || []).map(x => x.id || x.name).filter(Boolean);
+      const ids = (j.data || j.models || []).map(x => x.id || x.name).filter(Boolean).filter(i => !NON_CHAT.test(i));
       modelCache[name] = { deep: pickModel(ids), other: ids.find(i => FALLBACK.test(i)) || ids[0] };
     }
     const { deep, other } = modelCache[name];
@@ -236,7 +239,7 @@ function openaiHost(name, base, headers) {
         }));
         if (!r.ok) throw new Error(name + " " + r.status);
         const j = await r.json(); const t = clean(j.choices?.[0]?.message?.content);
-        if (t) { const el = $(".model b"); if (el) el.textContent = model.split("/").pop(); return t; }
+        if (t && !BAD_REPLY.test(t)) { const el = $(".model b"); if (el) el.textContent = model.split("/").pop(); return t; }
       } catch (e) { last = e; }
     }
     throw last || new Error(name + " empty");
@@ -274,8 +277,8 @@ async function askAI(messages) {
   for (let i = 0; i < PROVIDERS.length; i++) {
     try {
       const out = await PROVIDERS[i](messages);
-      if (out && !/^\s*\{\s*"error"/i.test(out)) return out;
-      errs.push(NAMES[i] + ": empty reply");
+      if (out && !/^\s*\{\s*"error"/i.test(out) && !BAD_REPLY.test(out)) return out;
+      errs.push(NAMES[i] + ": empty or invalid reply");
     } catch (e) { errs.push(NAMES[i] + ": " + (e && (e.message || e.error || e.code) || "failed")); }
   }
   console.warn("Turbo providers failed:", errs);
